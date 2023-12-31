@@ -17,15 +17,15 @@ if [ -f /root/.FulaOneTimeRun ]; then
 	touch /usr/bin/fula/.resize_flg
 
 	#connect to wifi
-	sudo nmcli device wifi connect 'ASUS' password '12345678'
+	#sudo nmcli device wifi connect 'ASUS' password '123456'
 
 	#change dns for
 	cp cp /etc/resolv.conf cp /etc/resolv.conf.back
 	touch cp /etc/resolv.conf
-	echo "nameserver 1.2.3.4" > /etc/resolv.conf
+	echo "nameserver 178.22.122.100" > /etc/resolv.conf
 
 	#
-	#chown -R pi:pi /home/pi/fula-ota
+	chown -R pi:pi /home/pi/fula-ota
 	#cd /home/pi/fula-ota/fula
 	#bash ./fula.sh install
 	#bash ./fula.sh start
