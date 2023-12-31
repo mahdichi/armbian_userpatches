@@ -61,7 +61,11 @@ fxBloxCustomScript()
 
 	Automount;
 
-	#InstallFulaService;
+	InstallpythonPackages;
+
+	InstallDocker;
+
+	InstallFulaService;
 
 } # fxBloxCustomScript
 
@@ -99,7 +103,7 @@ CreatUser()
 	) | passwd "$RealUserName" > /dev/null 2>&1
 
 	mkdir -p /home/pi/
-	chown -R pi:pi /home/pi/
+	chown -R "$RealUserName":"$RealUserName" /home/pi/
 
 	for additionalgroup in sudo netdev audio video disk tty users games dialout plugdev input bluetooth systemd-journal ssh; do
 		usermod -aG "${additionalgroup}" "${RealUserName}" 2> /dev/null
@@ -198,6 +202,53 @@ Automount()
 	#service systemd-udevd restart
 
 } # Automount
+
+InstallpythonPackages()
+{
+	echo "Install python Packages"
+
+	pip install RPi.GPIO
+	pip install pexpect
+	pip install psutil
+} # InstallpythonPackages
+
+InstallDocker()
+{
+	echo "installing docker"
+
+	# #Add Docker's official GPG key:
+	# for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do apt remove $pkg; done
+	# #apt-get update
+	# apt install ca-certificates curl gnupg
+	# install -m 0755 -d /etc/apt/keyrings
+	# curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+	# chmod a+r /etc/apt/keyrings/docker.gpg
+
+	# # Add the repository to Apt sources:
+	# echo \
+	#   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+	#   $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+	#   tee /etc/apt/sources.list.d/docker.list > /dev/null
+	# apt update
+
+	# apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+
+
+	apt install /tmp/overlay/docker/*.deb
+
+	#groupadd docker
+	#usermod -aG docker pi
+	#newgrp docker
+
+	#Install Docker Compose 1.29.2
+	echo "Docker Compose"
+	# curl -L "https://github.com/docker/compose/releases/download/v2.16.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+	cp /tmp/overlay/docker/docker-compose /usr/local/bin/docker-compose
+	chmod +x /usr/local/bin/docker-compose
+	ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+
+} # InstallDocker
 
 InstallFulaService()
 {
