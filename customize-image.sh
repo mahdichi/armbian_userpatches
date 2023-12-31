@@ -102,8 +102,8 @@ CreatUser()
 		echo "$password"
 	) | passwd "$RealUserName" > /dev/null 2>&1
 
-	mkdir -p /home/pi/
-	chown -R "$RealUserName":"$RealUserName" /home/pi/
+	#mkdir -p /home/pi/
+	#chown -R "$RealUserName":"$RealUserName" /home/pi/
 
 	for additionalgroup in sudo netdev audio video disk tty users games dialout plugdev input bluetooth systemd-journal ssh; do
 		usermod -aG "${additionalgroup}" "${RealUserName}" 2> /dev/null
@@ -249,6 +249,14 @@ InstallDocker()
 	ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 
 } # InstallDocker
+
+InstallFulaOTA()
+{
+	echo "Install Fula OTA"
+
+	git clone https://github.com/functionland/fula-ota /home/pi/fula-ota
+
+} # InstallFulaOTA
 
 InstallFulaService()
 {
