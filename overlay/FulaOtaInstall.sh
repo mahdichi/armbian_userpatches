@@ -70,7 +70,6 @@ if [ -f /root/.FulaOtaInstall1 ]; then
 	cd $FULA_OTA_HOME/fula
 	bash ./fula.sh install
 	rm /root/.FulaOtaInstall1
-	touch /root/.FulaOtaInstall2
 fi
 
 sleep 30

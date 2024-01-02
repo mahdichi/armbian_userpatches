@@ -67,7 +67,7 @@ fxBloxCustomScript()
 
 	InstallFulaOTAService;
 
-	#InstallFulaOTA;
+	InstallFulaOTA;
 
 } # fxBloxCustomScript
 
@@ -325,6 +325,9 @@ function dockerPull() {
   if check_internet; then
     echo "Start polling images..." | tee -a $FULA_LOG_PATH
 
+	echo "run docker deamon..." | tee -a $FULA_LOG_PATH
+	#dockerd&
+
     if [ -z "$1" ]; then
       echo "Full Image Updating..." | tee -a $FULA_LOG_PATH
 
@@ -333,7 +336,8 @@ function dockerPull() {
 	  for service in $(docker-compose -f /home/pi/fula-ota/docker/fxsupport/linux/docker-compose.yml config --services); do
         #image=$(docker-compose config | awk '$1 == "image:" { print $2 }' | grep "$service")
 		image=$(docker-compose -f /home/pi/fula-ota/docker/fxsupport/linux/docker-compose.yml config | awk '$1 == "image:" { print $2 }' | grep "$service")
-
+		echo "images:"
+		echo $image
         # Attempt to pull the image, if it fails use the local version
 		echo "Attempt to pull the image"
         #if ! docker-compose -f "${DOCKER_DIR}/docker-compose.yml" --env-file "$ENV_FILE" pull "$service"; then
