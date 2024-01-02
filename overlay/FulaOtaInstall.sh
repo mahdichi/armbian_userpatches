@@ -2,6 +2,9 @@
 
 HOME_DIR=/home/pi
 FULA_OTA_HOME="$HOME_DIR/fula-ota"
+
+WIFI_SC=$FULA_OTA_HOME/fula-ota/wifi.sh
+
 ########################################################
 updateFulaOtaRepo()
 {
@@ -19,6 +22,28 @@ updateFulaOtaRepo()
 
 } # updateFulaOtaRepo
 ########################################################
+check_internet()
+{
+  wget -q --spider --timeout=10 https://hub.docker.com
+  return $?   # Return the status directly, no need for if/else.
+} # check_internet
+########################################################
+connectwifi()
+{
+  # Check internet connection and setup WiFi if needed
+  if [ -f "$WIFI_SC" ]; then
+	chmod +x $WIFI_SC
+    if ! check_internet; then
+      echo "connectwifi: Waiting for Wi-Fi adapter to be ready..."
+      sleep 15
+      bash $WIFI_SC 2>&1 || echo "Wifi setup failed"
+      sleep 15
+    else
+      echo "connectwifi: Already has internet..."
+    fi
+  fi
+} # connectwifi
+########################################################
 if [ -f /root/.FulaOtaInstall1 ]; then
     echo "Fula OTA install phase 1 "
 
@@ -34,18 +59,24 @@ if [ -f /root/.FulaOtaInstall1 ]; then
 	#disable resize rootfs
 	touch /usr/bin/fula/.resize_flg
 
+	nmcli device wifi connect 'ASUS' password '5218509ma'
+
 	updateFulaOtaRepo;
 
 	#
 	chown -R pi:pi $FULA_OTA_HOME
 	cd $FULA_OTA_HOME/fula
 	bash ./fula.sh install
-
+connectwifi
 	rm /root/.FulaOtaInstall1
 	touch /root/.FulaOtaInstall2
-
 fi
 
+connectwifi;
+echo "nameserver 178.22.122.100" > /etc/resolv.conf
+sleep 5
+
+updateFulaOtaRepo;
 
 
 docker ps | grep fula_updater 1>2
@@ -55,8 +86,8 @@ else
     echo "Fula OTA install error"
 	cd $FULA_OTA_HOME/fula
 	bash ./fula.sh install
-	sleep 10
-	reboot
+	#sleep 10
+	#reboot
 fi
 
 ########################################################
