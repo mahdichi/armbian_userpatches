@@ -218,30 +218,7 @@ InstallDocker()
 {
 	echo "installing docker"
 
-	# #Add Docker's official GPG key:
-	# for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do apt remove $pkg; done
-	# #apt-get update
-	# apt install ca-certificates curl gnupg
-	# install -m 0755 -d /etc/apt/keyrings
-	# curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-	# chmod a+r /etc/apt/keyrings/docker.gpg
-
-	# # Add the repository to Apt sources:
-	# echo \
-	#   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-	#   $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-	#   tee /etc/apt/sources.list.d/docker.list > /dev/null
-	# apt update
-
-	# apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
-
-
 	apt install /tmp/overlay/docker/*.deb
-
-	#groupadd docker
-	#usermod -aG docker pi
-	#newgrp docker
 
 	#Install Docker Compose 1.29.2
 	echo "Docker Compose"
@@ -257,7 +234,7 @@ InstallFulaOTA()
 	echo "Install Fula OTA"
 	git clone https://github.com/functionland/fula-ota /home/pi/fula-ota
 
-	#FulaOTAinstall;
+	FulaOTAinstall;
 
 } # InstallFulaOTA
 
@@ -331,6 +308,12 @@ function check_internet() {
   return $?   # Return the status directly, no need for if/else.
 }
 
+
+HOME_DIR=/home/pi
+FULA_OTA_HOME=$HOME_DIR/fula-ota/fula
+FULA_PATH=/usr/bin/fula
+
+FULA_LOG_PATH=$HOME_DIR/fula.sh.log
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_FILE="$FULA_PATH/.env"
 DOCKER_DIR=$DIR
@@ -343,31 +326,31 @@ function dockerPull() {
       echo "Full Image Updating..." | tee -a $FULA_LOG_PATH
 
       # Iterate over services and pull images only if they do not exist locally
-      for service in $(docker-compose config --services); do
-        image=$(docker-compose config | awk '$1 == "image:" { print $2 }' | grep "$service")
+      #for service in $(docker-compose config --services); do
+	  for service in $(docker-compose -f /home/pi/fula-ota/docker/fxsupport/linux/docker-compose.yml config --services); do
+        #image=$(docker-compose config | awk '$1 == "image:" { print $2 }' | grep "$service")
+		image=$(docker-compose -f /home/pi/fula-ota/docker/fxsupport/linux/docker-compose.yml config | awk '$1 == "image:" { print $2 }' | grep "$service")
 
         # Attempt to pull the image, if it fails use the local version
+		echo "Attempt to pull the image"
         if ! docker-compose -f "${DOCKER_DIR}/docker-compose.yml" --env-file "$ENV_FILE" pull "$service"; then
           echo "$service image pull failed, using local version" | tee -a $FULA_LOG_PATH
         fi
       done
     else
       . "$ENV_FILE"
-      echo "Updating fxsupport ($FX_SUPPROT)..." | sudo tee -a $FULA_LOG_PATH
+      echo "Updating fxsupport ($FX_SUPPROT)..." | tee -a $FULA_LOG_PATH
 
       # Attempt to pull the image, if it fails use the local version
       if ! docker pull "$FX_SUPPROT"; then
-        echo "fx_support image pull failed, using local version" | sudo tee -a $FULA_LOG_PATH
+        echo "fx_support image pull failed, using local version" | tee -a $FULA_LOG_PATH
       fi
     fi
   else
-    echo "You are not connected to internet!" | sudo tee -a $FULA_LOG_PATH
-    echo "Please check your connection" | sudo tee -a $FULA_LOG_PATH
+    echo "You are not connected to internet!" | tee -a $FULA_LOG_PATH
+    echo "Please check your connection" | tee -a $FULA_LOG_PATH
   fi
 }
-
-HOME_DIR=/home/pi
-FULA_LOG_PATH=$HOME_DIR/fula.sh.log
 
 function FulaOTAinstall()
 {
@@ -382,18 +365,37 @@ function FulaOTAinstall()
 	  echo "fula-ota directory not found" | tee -a $FULA_LOG_PATH
 
 	fi
-	if [ -f "./control_led.py" ]; then
-	  python control_led.py blue 100 2>&1 | tee -a $FULA_LOG_PATH &
-	fi
 
 	if test -f /etc/apt/apt.conf.d/proxy.conf; then rm /etc/apt/apt.conf.d/proxy.conf; fi
 	setup_logrotate $FULA_LOG_PATH || { echo "Error setting up logrotate" 2>&1 | tee -a $FULA_LOG_PATH; all_success=false; } || true
 	mkdir -p /home/pi/commands/ 2>&1 | tee -a $FULA_LOG_PATH || { echo "Error making directory /home/pi/commands/" 2>&1 | tee -a $FULA_LOG_PATH; all_success=false; } || true
 
-	#connectwifi
-
 	echo "Call modify_bluetooth, but don't stop the script if it fails" 2>&1 |   tee -a $FULA_LOG_PATH
 	modify_bluetooth 2>&1 | tee -a $FULA_LOG_PATH || { echo "modify_bluetooth failed, but continuing installation..." 2>&1 | tee -a $FULA_LOG_PATH; all_success=false; } || true
+
+	echo "Copying Files..." | tee -a $FULA_LOG_PATH
+  	mkdir -p $FULA_PATH/ 2>&1 | tee -a $FULA_LOG_PATH || { echo "Error making directory $FULA_PATH" | tee -a $FULA_LOG_PATH; }
+
+	if [ "$(readlink -f .)" != "$(readlink -f $FULA_PATH)" ]; then
+	  cp $FULA_OTA_HOME/docker-compose.yml $FULA_PATH/ 2>&1 | tee -a $FULA_LOG_PATH || { echo "Error copying file docker-compose.yml" | tee -a $FULA_LOG_PATH; } || true
+	  cp $FULA_OTA_HOME/.env $FULA_PATH/ 2>&1 | tee -a $FULA_LOG_PATH || { echo "Error copying file .env" | tee -a $FULA_LOG_PATH; } || true
+	  cp $FULA_OTA_HOME/union-drive.sh $FULA_PATH/ 2>&1 | tee -a $FULA_LOG_PATH || { echo "Error copying file union-drive.sh" | tee -a $FULA_LOG_PATH; } || true
+	  cp $FULA_OTA_HOME/fula.sh $FULA_PATH/ 2>&1 | tee -a $FULA_LOG_PATH || { echo "Error copying file fula.sh" | tee -a $FULA_LOG_PATH; } || true
+	  cp $FULA_OTA_HOME/hw_test.py $FULA_PATH/ 2>&1 | tee -a $FULA_LOG_PATH || { echo "Error copying file hw_test.py" | tee -a $FULA_LOG_PATH; } || true
+	  cp $FULA_OTA_HOME/resize.sh $FULA_PATH/ 2>&1 | tee -a $FULA_LOG_PATH || { echo "Error copying file resize.sh" | tee -a $FULA_LOG_PATH; } || true
+	  cp $FULA_OTA_HOME/wifi.sh $FULA_PATH/ 2>&1 | tee -a $FULA_LOG_PATH || { echo "Error copying file wifi.sh" | tee -a $FULA_LOG_PATH; } || true
+	  cp $FULA_OTA_HOME/control_led.py $FULA_PATH/ 2>&1 | tee -a $FULA_LOG_PATH || { echo "Error copying file control_led.py" | tee -a $FULA_LOG_PATH; } || true
+	  cp $FULA_OTA_HOME/service.py $FULA_PATH/ 2>&1 | tee -a $FULA_LOG_PATH || { echo "Error copying file service.py" | tee -a $FULA_LOG_PATH; } || true
+	  cp $FULA_OTA_HOME/advertisement.py $FULA_PATH/ 2>&1 | tee -a $FULA_LOG_PATH || { echo "Error copying file advertisement.py" | tee -a $FULA_LOG_PATH; } || true
+	  cp $FULA_OTA_HOME/bletools.py $FULA_PATH/ 2>&1 | tee -a $FULA_LOG_PATH || { echo "Error copying file bletools.py" | tee -a $FULA_LOG_PATH; } || true
+	  cp $FULA_OTA_HOME/service.py $FULA_PATH/ 2>&1 | tee -a $FULA_LOG_PATH || { echo "Error copying file service.py" | tee -a $FULA_LOG_PATH; } || true
+	  cp $FULA_OTA_HOME/bluetooth.py $FULA_PATH/ 2>&1 | tee -a $FULA_LOG_PATH || { echo "Error copying file bluetooth.py" | tee -a $FULA_LOG_PATH; } || true
+	  cp $FULA_OTA_HOME/update.sh $FULA_PATH/ 2>&1 | tee -a $FULA_LOG_PATH || { echo "Error copying file update.sh" | tee -a $FULA_LOG_PATH; } || true
+	  cp $FULA_OTA_HOME/docker_rm_duplicate_network.py $FULA_PATH/ 2>&1 | tee -a $FULA_LOG_PATH || { echo "Error copying file docker_rm_duplicate_network.py" | tee -a $FULA_LOG_PATH; } || true
+	  cp $FULA_OTA_HOME/commands.sh $FULA_PATH/ 2>&1 | tee -a $FULA_LOG_PATH || { echo "Error copying file commands.sh" | tee -a $FULA_LOG_PATH; } || true
+	else
+	  echo "Source and destination are the same, skipping copy" | tee -a $FULA_LOG_PATH
+	fi
 
 	echo "Installing Fula ..." 2>&1 | tee -a $FULA_LOG_PATH
 	echo "Pulling Images..." 2>&1 | tee -a $FULA_LOG_PATH
