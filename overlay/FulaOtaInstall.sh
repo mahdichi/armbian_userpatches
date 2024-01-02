@@ -59,11 +59,10 @@ if [ -f /root/.FulaOtaInstall1 ]; then
 	#disable resize rootfs
 	touch /usr/bin/fula/.resize_flg
 
+	sleep 30
 	nmcli device wifi connect 'ASUS' password '123456'
 	echo "nameserver 178.22.122.100" > /etc/resolv.conf
-	sleep 5
 
-	#connectwifi;
 	sleep 5
 	updateFulaOtaRepo;
 
@@ -74,13 +73,12 @@ if [ -f /root/.FulaOtaInstall1 ]; then
 	touch /root/.FulaOtaInstall2
 fi
 
+sleep 30
 nmcli device wifi connect 'ASUS' password '123456'
 echo "nameserver 178.22.122.100" > /etc/resolv.conf
-sleep 5
-#connectwifi;
+
 sleep 5
 updateFulaOtaRepo;
-
 
 docker ps | grep fula_updater 1>2
 if [  $? -eq 0 ]; then
