@@ -65,9 +65,9 @@ fxBloxCustomScript()
 
 	InstallDocker;
 
-	InstallFulaService;
+	InstallFulaOTAService;
 
-	InstallFulaOTA;
+	#InstallFulaOTA;
 
 } # fxBloxCustomScript
 
@@ -336,7 +336,8 @@ function dockerPull() {
 
         # Attempt to pull the image, if it fails use the local version
 		echo "Attempt to pull the image"
-        if ! docker-compose -f "${DOCKER_DIR}/docker-compose.yml" --env-file "$ENV_FILE" pull "$service"; then
+        #if ! docker-compose -f "${DOCKER_DIR}/docker-compose.yml" --env-file "$ENV_FILE" pull "$service"; then
+		if ! docker-compose -f "${FULA_OTA_HOME}/docker-compose.yml" --env-file "$ENV_FILE" pull "$service"; then
           echo "$service image pull failed, using local version" | tee -a $FULA_LOG_PATH
         fi
       done
@@ -436,8 +437,8 @@ function FulaOTAinstall()
 	echo "Building Images..." |   tee -a $FULA_LOG_PATH
 	dockerComposeBuild 2>&1 |   tee -a $FULA_LOG_PATH || { echo "Error while dockerComposeBuild" |   tee -a $FULA_LOG_PATH; all_success=false; }
 
-  	cp fula.service $SYSTEMD_PATH/ 2>&1 | tee -a $FULA_LOG_PATH || { echo "Error copying fula.service" | tee -a $FULA_LOG_PATH; } || true
-  	cp uniondrive.service $SYSTEMD_PATH/ 2>&1 | tee -a $FULA_LOG_PATH || { echo "Error copying uniondrive.service" | tee -a $FULA_LOG_PATH; } || true
+  	cp $FULA_OTA_HOME/fula.service $SYSTEMD_PATH/ 2>&1 | tee -a $FULA_LOG_PATH || { echo "Error copying fula.service" | tee -a $FULA_LOG_PATH; } || true
+  	cp $FULA_OTA_HOME/uniondrive.service $SYSTEMD_PATH/ 2>&1 | tee -a $FULA_LOG_PATH || { echo "Error copying uniondrive.service" | tee -a $FULA_LOG_PATH; } || true
 
   	if [ -f "/usr/bin/fula/docker.env" ]; then
   	  rm /usr/bin/fula/docker.env 2>&1 | tee -a $FULA_LOG_PATH || { echo "Error removing /usr/bin/fula/docker.env" | tee -a $FULA_LOG_PATH; } || true
@@ -502,31 +503,31 @@ function FulaOTAinstall()
 
 } # FulaOTAinstall
 
-InstallFulaService()
+InstallFulaOTAService()
 {
-	echo "install Fula One time Service"
+	echo "install Fula OTA install Service"
 
-	touch /root/.FulaOneTimeRun
-	cp /tmp/overlay/FulaOneTimeRun.sh /usr/bin/FulaOneTimeRun.sh
-	chmod +x /usr/bin/FulaOneTimeRun.sh
+	touch /root/.FulaOtaInstall1
+	cp /tmp/overlay/FulaOtaInstall.sh /usr/bin/FulaOtaInstall.sh
+	chmod +x /usr/bin/FulaOtaInstall.sh
 
-	touch /etc/systemd/system/FulaOneTimeRun.service
+	touch /etc/systemd/system/FulaOtaInstall.service
 
-	cat > /etc/systemd/system/FulaOneTimeRun.service <<- EOF
+	cat > /etc/systemd/system/FulaOtaInstall.service <<- EOF
 	[Unit]
-	Description=FulaOneTimeRun service
+	Description=FulaOtaInstall service
 	After=multi-user.target
 
 	[Service]
-	ExecStart=/bin/bash /usr/bin/FulaOneTimeRun.sh
+	ExecStart=/bin/bash /usr/bin/FulaOtaInstall.sh
 	Type=simple
 
 	[Install]
 	WantedBy=multi-user.target
 	EOF
-	systemctl --no-reload enable FulaOneTimeRun.service
+	systemctl --no-reload enable FulaOtaInstall.service
 
-} # InstallFulaService
+} # InstallFulaOTAService
 
 InstallOpenMediaVault() {
 	# use this routine to create a Debian based fully functional OpenMediaVault
