@@ -89,8 +89,8 @@ else
     echo "Fula OTA install error"
 	cd $FULA_OTA_HOME/fula
 	bash ./fula.sh install
-	#sleep 10
-	#reboot
+	sleep 10
+	reboot
 fi
 
 ########################################################
