@@ -6,8 +6,8 @@ ARMBIAN_BUILD_PATH=/media/ma/fx/armbian/armbian-build
 DOCKER_OFFLINE_PATH=$ARMBIAN_BUILD_PATH/userpatches/overlay/docker_offline/
 ########################################################
 Main() {
-	DockerOffline;
-	#ArmbianCompileServer;
+	#DockerOffline;
+	ArmbianCompileServer;
 } # Main
 ########################################################
 ArmbianCompileServer()

@@ -234,7 +234,7 @@ InstallFulaOTA()
 	echo "Install Fula OTA"
 	git clone https://github.com/functionland/fula-ota /home/pi/fula-ota
 
-	FulaOTAinstall;
+	#FulaOTAinstall;
 
 } # InstallFulaOTA
 
