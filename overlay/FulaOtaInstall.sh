@@ -15,7 +15,6 @@ updateFulaOtaRepo()
 		echo "clone fula-ota repo"
 			git clone https://github.com/functionland/fula-ota $FULA_OTA_HOME
 	else
-		echo "update fula-ota repo"
 		cd $FULA_OTA_HOME
 		git pull
 	fi
@@ -30,7 +29,7 @@ check_internet()
 ########################################################
 connectwifi()
 {
-  # Check internet connection and setup WiFi if needed
+  echo "Check internet connection and setup WiFi if needed"
   if [ -f "$WIFI_SC" ]; then
 	chmod +x $WIFI_SC
     if ! check_internet; then
@@ -61,13 +60,13 @@ if [ -f /root/.FulaOtaInstall1 ]; then
 
 	nmcli device wifi connect 'ASUS' password '5218509ma'
 
+	connectwifi;
+	sleep 5
 	updateFulaOtaRepo;
 
-	#
 	chown -R pi:pi $FULA_OTA_HOME
 	cd $FULA_OTA_HOME/fula
 	bash ./fula.sh install
-connectwifi
 	rm /root/.FulaOtaInstall1
 	touch /root/.FulaOtaInstall2
 fi
@@ -77,7 +76,6 @@ echo "nameserver 178.22.122.100" > /etc/resolv.conf
 sleep 5
 
 updateFulaOtaRepo;
-
 
 docker ps | grep fula_updater 1>2
 if [  $? -eq 0 ]; then
