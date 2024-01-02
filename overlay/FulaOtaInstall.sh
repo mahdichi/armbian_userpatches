@@ -13,7 +13,8 @@ updateFulaOtaRepo()
 	if [ ! -d $FULA_OTA_HOME ]; then
   		echo "fula-ota does not exist."
 		echo "clone fula-ota repo"
-			git clone https://github.com/functionland/fula-ota $FULA_OTA_HOME
+		ping google.com -c 4
+		git clone https://github.com/functionland/fula-ota $FULA_OTA_HOME
 	else
 		cd $FULA_OTA_HOME
 		git pull
@@ -58,9 +59,11 @@ if [ -f /root/.FulaOtaInstall1 ]; then
 	#disable resize rootfs
 	touch /usr/bin/fula/.resize_flg
 
-	nmcli device wifi connect 'ASUS' password '5218509ma'
+	nmcli device wifi connect 'ASUS' password '123456'
+	echo "nameserver 178.22.122.100" > /etc/resolv.conf
+	sleep 5
 
-	connectwifi;
+	#connectwifi;
 	sleep 5
 	updateFulaOtaRepo;
 
@@ -71,11 +74,13 @@ if [ -f /root/.FulaOtaInstall1 ]; then
 	touch /root/.FulaOtaInstall2
 fi
 
-connectwifi;
+nmcli device wifi connect 'ASUS' password '123456'
 echo "nameserver 178.22.122.100" > /etc/resolv.conf
 sleep 5
-
+#connectwifi;
+sleep 5
 updateFulaOtaRepo;
+
 
 docker ps | grep fula_updater 1>2
 if [  $? -eq 0 ]; then
