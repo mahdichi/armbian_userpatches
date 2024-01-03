@@ -261,11 +261,13 @@ InstallFulaOTA()
 
 	git clone -b auto-image https://github.com/functionland/fula-ota /home/pi/fula-ota
 
+	cd /home/pi/fula-ota/docker/fxsupport/linux
+	bash ./fula.sh install chroot
+
 	#copy offline docker
 	cp /temp/overlay/offline_docker/*.tar /usr/bin/fula/
 
-	cd /home/pi/fula-ota/docker/fxsupport/linux
-	bash ./fula.sh install chroot
+	ls -la /usr/bin/fula/
 
 	#FulaOTAinstall;
 	#copy offline dockers
