@@ -57,35 +57,9 @@ if [ -f /root/.FulaOtaInstall1 ]; then
 	#disable resize rootfs
 	touch /usr/bin/fula/.resize_flg
 
-	# sleep 30
-	# nmcli device wifi connect 'ASUS' password '123456'
-	# echo "nameserver 178.22.122.100" > /etc/resolv.conf
 
-	# sleep 5
-	# updateFulaOtaRepo;
-
-	chown -R pi:pi $FULA_OTA_HOME
-	#cd $FULA_OTA_HOME/docker/fxsupport/linux
-	#bash ./fula.sh install
+	#chown -R pi:pi $FULA_OTA_HOME
 	rm /root/.FulaOtaInstall1
 fi
-
-# sleep 30
-# nmcli device wifi connect 'ASUS' password '123456'
-# echo "nameserver 178.22.122.100" > /etc/resolv.conf
-
-# sleep 5
-# updateFulaOtaRepo;
-
-# docker ps | grep fula_updater 1>2
-# if [  $? -eq 0 ]; then
-#     echo "Fula OTA install ok"
-# else
-#     echo "Fula OTA install error"
-# 	cd $FULA_OTA_HOME/fula
-# 	bash ./fula.sh install
-# 	sleep 10
-# 	reboot
-# fi
 
 ########################################################

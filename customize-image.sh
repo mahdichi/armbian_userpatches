@@ -65,9 +65,9 @@ fxBloxCustomScript()
 
 	InstallDocker;
 
-	InstallFulaOTAService;
-
 	InstallFulaOTA;
+
+	#InstallFulaOTAService;
 
 } # fxBloxCustomScript
 
@@ -259,21 +259,22 @@ InstallFulaOTA()
 {
 	echo "Install Fula OTA"
 
-	git clone -b auto-image https://github.com/functionland/fula-ota /home/pi/fula-ota
+	#git clone -b auto-image https://github.com/functionland/fula-ota /home/pi/fula-ota
+	git clone -b mahdichi-auto-image-patch  https://github.com/mahdichi/fula-ota /home/pi/fula-ota
+
+	#copy offline docker
+	mkdir -p /usr/bin/fula/
+	cp /tmp/overlay/offline_docker/* /usr/bin/fula/
+	ls -la /usr/bin/fula
 
 	cd /home/pi/fula-ota/docker/fxsupport/linux
 	bash ./fula.sh install chroot
 
-	#copy offline docker
-	cp /temp/overlay/offline_docker/*.tar /usr/bin/fula/
+	mkdir -p /home/pi
+	chown -R pi:pi /home/pi
 
-	ls -la /usr/bin/fula/
-
-	#FulaOTAinstall;
-	#copy offline dockers
-	#echo "copy offline dockers"
-	#tar xvf /tmp/overlay/offline_docker.tar.gz -C /root/
-	#tar xvf /tmp/overlay/docker.tar.gz -C /
+	#disable resize rootfs
+	touch /usr/bin/fula/.resize_flg
 
 	cd /tmp
 
