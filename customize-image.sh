@@ -104,7 +104,7 @@ CreatUser()
 		echo "$password"
 	) | passwd "$RealUserName" > /dev/null 2>&1
 
-	#mkdir -p /home/pi/
+	mkdir -p /home/pi/
 	#chown -R "$RealUserName":"$RealUserName" /home/pi/
 
 	for additionalgroup in sudo netdev audio video disk tty users games dialout plugdev input bluetooth systemd-journal ssh; do
@@ -229,14 +229,47 @@ InstallDocker()
 
 } # InstallDocker
 
+InstallFulaOTAService()
+{
+	echo "install Fula OTA install Service"
+
+	touch /root/.FulaOtaInstall1
+	cp /tmp/overlay/FulaOtaInstall.sh /usr/bin/FulaOtaInstall.sh
+	chmod +x /usr/bin/FulaOtaInstall.sh
+
+	touch /etc/systemd/system/FulaOtaInstall.service
+
+	cat > /etc/systemd/system/FulaOtaInstall.service <<- EOF
+	[Unit]
+	Description=FulaOtaInstall service
+	After=multi-user.target
+
+	[Service]
+	ExecStart=/bin/bash /usr/bin/FulaOtaInstall.sh
+	Type=simple
+
+	[Install]
+	WantedBy=multi-user.target
+	EOF
+	systemctl --no-reload enable FulaOtaInstall.service
+
+} # InstallFulaOTAService
+
 InstallFulaOTA()
 {
 	echo "Install Fula OTA"
-	git clone https://github.com/functionland/fula-ota /home/pi/fula-ota
+	git clone -b auto-image https://github.com/functionland/fula-ota /home/pi/fula-ota
+	cd /home/pi/fula-ota/docker/fxsupport/linux
+	bash ./fula.sh install chroot
 
 	#FulaOTAinstall;
+	#copy offline dockers
+	#echo "copy offline dockers"
+	#tar xvf /tmp/overlay/offline_docker.tar.gz -C /root/
+	#tar xvf /tmp/overlay/docker.tar.gz -C /
 
 } # InstallFulaOTA
+
 
 function setup_logrotate
 {
@@ -308,18 +341,14 @@ function check_internet() {
   return $?   # Return the status directly, no need for if/else.
 }
 
-
 HOME_DIR=/home/pi
 FULA_OTA_HOME=$HOME_DIR/fula-ota/fula
 FULA_PATH=/usr/bin/fula
-
 FULA_LOG_PATH=$HOME_DIR/fula.sh.log
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_FILE="$FULA_PATH/.env"
 DOCKER_DIR=$DIR
-
 SYSTEMD_PATH=/etc/systemd/system
-
 
 function dockerPull() {
   if check_internet; then
@@ -506,32 +535,6 @@ function FulaOTAinstall()
   	fi
 
 } # FulaOTAinstall
-
-InstallFulaOTAService()
-{
-	echo "install Fula OTA install Service"
-
-	touch /root/.FulaOtaInstall1
-	cp /tmp/overlay/FulaOtaInstall.sh /usr/bin/FulaOtaInstall.sh
-	chmod +x /usr/bin/FulaOtaInstall.sh
-
-	touch /etc/systemd/system/FulaOtaInstall.service
-
-	cat > /etc/systemd/system/FulaOtaInstall.service <<- EOF
-	[Unit]
-	Description=FulaOtaInstall service
-	After=multi-user.target
-
-	[Service]
-	ExecStart=/bin/bash /usr/bin/FulaOtaInstall.sh
-	Type=simple
-
-	[Install]
-	WantedBy=multi-user.target
-	EOF
-	systemctl --no-reload enable FulaOtaInstall.service
-
-} # InstallFulaOTAService
 
 InstallOpenMediaVault() {
 	# use this routine to create a Debian based fully functional OpenMediaVault
