@@ -258,7 +258,12 @@ InstallFulaOTAService()
 InstallFulaOTA()
 {
 	echo "Install Fula OTA"
+
 	git clone -b auto-image https://github.com/functionland/fula-ota /home/pi/fula-ota
+
+	#copy offline docker
+	cp /temp/overlay/offline_docker/*.tar /usr/bin/fula/
+
 	cd /home/pi/fula-ota/docker/fxsupport/linux
 	bash ./fula.sh install chroot
 
@@ -267,6 +272,8 @@ InstallFulaOTA()
 	#echo "copy offline dockers"
 	#tar xvf /tmp/overlay/offline_docker.tar.gz -C /root/
 	#tar xvf /tmp/overlay/docker.tar.gz -C /
+
+	cd /tmp
 
 } # InstallFulaOTA
 
