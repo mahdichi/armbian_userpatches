@@ -3,11 +3,10 @@
 #https://docs.armbian.com/Developer-Guide_Build-Options/
 
 ARMBIAN_BUILD_PATH=/media/ma/fx/armbian/armbian-build
-DOCKER_OFFLINE_PATH=$ARMBIAN_BUILD_PATH/userpatches/overlay/docker_offline/
 ########################################################
 Main() {
-	#DockerOffline;
-	ArmbianCompileServer;
+	#ArmbianCompileServer;
+	ArmbianCompileDesktop;
 } # Main
 ########################################################
 ArmbianCompileServer()
@@ -63,17 +62,9 @@ ArmbianCompileDesktop()
 	" \
 	#usbmount: ebhelper build-essential ntfs-3g fakeroot lockfile-progs
 	#docker:   libip6tc2 libnftnl11 iptables
-	#fula: logrotate
+	#fula: logrotate	
 
 } # ArmbianCompileDesktop
-########################################################
-DockerOffline()
-{
-	docker save functionland/node:release -o $DOCKER_OFFLINE_PATH/node_release.tar
-	docker save functionland/go-fula:release -o $DOCKER_OFFLINE_PATH/go_fula_release.tar
-	docker save functionland/fxsupport:release -o $DOCKER_OFFLINE_PATH/fxsupport_release.tar
-
-} # DockerOffline
 ########################################################
 
 Main "$@"

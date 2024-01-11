@@ -59,11 +59,11 @@ fxBloxCustomScript()
 
 	CreatUser;
 
-	InstallpythonPackages;
+	#InstallpythonPackages;
 
-	InstallDocker;
+	#InstallDocker;
 
-	InstallFulaOTA;
+	#InstallFulaOTA;
 
 } # fxBloxCustomScript
 
